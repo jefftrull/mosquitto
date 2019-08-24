@@ -179,7 +179,7 @@ int mosquitto_reinitialise(struct mosquitto *mosq, const char *id, bool clean_st
 	mosq->tls_ocsp_required = false;
 #endif
 #ifdef WITH_THREADING
-        pthread_mutexattr_t attr;
+	pthread_mutexattr_t attr;
 	pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_ERRORCHECK);
 
 	pthread_mutex_init(&mosq->callback_mutex, &attr);
