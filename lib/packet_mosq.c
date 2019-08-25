@@ -217,14 +217,17 @@ int packet__write(struct mosquitto *mosq)
 	}
 	pthread_mutex_unlock(&mosq->out_packet_mutex);
 
+	pthread_mutex_lock(&mosq->state_mutex);
 #if defined(WITH_TLS) && !defined(WITH_BROKER)
 	if((mosq->state == mosq_cs_connect_pending) || mosq->want_connect){
 #else
 	if(mosq->state == mosq_cs_connect_pending){
 #endif
+		pthread_mutex_unlock(&mosq->state_mutex);
 		pthread_mutex_unlock(&mosq->current_out_packet_mutex);
 		return MOSQ_ERR_SUCCESS;
 	}
+	pthread_mutex_unlock(&mosq->state_mutex);
 
 	while(mosq->current_out_packet){
 		packet = mosq->current_out_packet;
@@ -319,9 +322,12 @@ int packet__read(struct mosquitto *mosq)
 	if(mosq->sock == INVALID_SOCKET){
 		return MOSQ_ERR_NO_CONN;
 	}
+	pthread_mutex_lock(&mosq->state_mutex);
 	if(mosq->state == mosq_cs_connect_pending){
+		pthread_mutex_unlock(&mosq->state_mutex);
 		return MOSQ_ERR_SUCCESS;
 	}
+	pthread_mutex_unlock(&mosq->state_mutex);
 
 	/* This gets called if pselect() indicates that there is network data
 	 * available - ie. at least one byte.  What we do depends on what data we

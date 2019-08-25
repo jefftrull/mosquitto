@@ -50,9 +50,12 @@ int handle__pubackcomp(struct mosquitto *mosq, const char *type)
 
 	assert(mosq);
 
+	pthread_mutex_lock(&mosq->state_mutex);
 	if(mosq->state != mosq_cs_connected){
+		pthread_mutex_unlock(&mosq->state_mutex);
 		return MOSQ_ERR_PROTOCOL;
 	}
+	pthread_mutex_unlock(&mosq->state_mutex);
 
 	pthread_mutex_lock(&mosq->msgs_out.mutex);
 	util__increment_send_quota(mosq);

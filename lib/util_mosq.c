@@ -88,7 +88,9 @@ int mosquitto__check_keepalive(struct mosquitto *mosq)
 	if(mosq->keepalive && mosq->sock != INVALID_SOCKET &&
 			(now >= next_msg_out || now - last_msg_in >= mosq->keepalive)){
 
+		pthread_mutex_lock(&mosq->state_mutex);
 		if(mosq->state == mosq_cs_connected && mosq->ping_t == 0){
+			pthread_mutex_unlock(&mosq->state_mutex);
 			send__pingreq(mosq);
 			/* Reset last msg times to give the server time to send a pingresp */
 			pthread_mutex_lock(&mosq->msgtime_mutex);
@@ -100,7 +102,6 @@ int mosquitto__check_keepalive(struct mosquitto *mosq)
 			net__socket_close(db, mosq);
 #else
 			net__socket_close(mosq);
-			pthread_mutex_lock(&mosq->state_mutex);
 			if(mosq->state == mosq_cs_disconnecting){
 				rc = MOSQ_ERR_SUCCESS;
 			}else{

@@ -43,9 +43,12 @@ int handle__publish(struct mosquitto *mosq)
 
 	assert(mosq);
 
+	pthread_mutex_lock(&mosq->state_mutex);
 	if(mosq->state != mosq_cs_connected){
+		pthread_mutex_unlock(&mosq->state_mutex);
 		return MOSQ_ERR_PROTOCOL;
 	}
+	pthread_mutex_unlock(&mosq->state_mutex);
 
 	message = mosquitto__calloc(1, sizeof(struct mosquitto_message_all));
 	if(!message) return MOSQ_ERR_NOMEM;

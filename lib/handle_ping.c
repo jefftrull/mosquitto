@@ -55,9 +55,12 @@ int handle__pingresp(struct mosquitto *mosq)
 {
 	assert(mosq);
 
+	pthread_mutex_lock(&mosq->state_mutex);
 	if(mosq->state != mosq_cs_connected){
+		pthread_mutex_unlock(&mosq->state_mutex);
 		return MOSQ_ERR_PROTOCOL;
 	}
+	pthread_mutex_unlock(&mosq->state_mutex);
 
 	mosq->ping_t = 0; /* No longer waiting for a PINGRESP. */
 #ifdef WITH_BROKER

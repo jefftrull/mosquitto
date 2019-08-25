@@ -43,9 +43,12 @@ int handle__suback(struct mosquitto *mosq)
 
 	assert(mosq);
 
+	pthread_mutex_lock(&mosq->state_mutex);
 	if(mosq->state != mosq_cs_connected){
+		pthread_mutex_unlock(&mosq->state_mutex);
 		return MOSQ_ERR_PROTOCOL;
 	}
+	pthread_mutex_unlock(&mosq->state_mutex);
 
 #ifdef WITH_BROKER
 	log__printf(NULL, MOSQ_LOG_DEBUG, "Received SUBACK from %s", mosq->id);
