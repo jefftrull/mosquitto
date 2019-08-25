@@ -174,11 +174,12 @@ int packet__queue(struct mosquitto *mosq, struct mosquitto__packet *packet)
 #endif
 	}
 
-	if(mosq->in_callback == false && mosq->threaded == mosq_ts_none){
-		return packet__write(mosq);
-	}else{
-		return MOSQ_ERR_SUCCESS;
+	if(mosq->threaded == mosq_ts_none){
+		if(mosq->in_callback == false){
+			return packet__write(mosq);
+		}
 	}
+        return MOSQ_ERR_SUCCESS;
 #endif
 }
 
